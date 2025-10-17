@@ -12,6 +12,9 @@ WORKDIR /var/www/html
 # 3️⃣ Copy app files
 COPY . .
 
+# ✅ Create SQLite file
+RUN mkdir -p /var/www/html/database && touch /var/www/html/database/database.sqlite
+
 # 4️⃣ Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 

@@ -30,6 +30,9 @@ RUN npm install && npm run build
 # Run database migrations before serving
 RUN php artisan migrate --force || true
 
+# ✅ Clear and optimize Laravel caches before serving
+RUN php artisan config:clear && php artisan view:clear && php artisan route:clear && php artisan optimize
+
 # 8️⃣ Expose port (Render uses $PORT env automatically)
 EXPOSE 10000
 

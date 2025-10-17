@@ -4,13 +4,12 @@ services:
     env: php
     plan: free
     buildCommand: |
-      apt-get update && apt-get install -y nodejs npm
       composer install --no-dev --optimize-autoloader
       php artisan key:generate
       npm install
       npm run build
       php artisan migrate --force
-    startCommand: php artisan serve --host 0.0.0.0 --port 8000
+    startCommand: php artisan serve --host 0.0.0.0 --port 10000
     envVars:
       - key: APP_ENV
         value: production
@@ -18,4 +17,3 @@ services:
         value: false
       - key: APP_URL
         value: https://mark-portfolio.onrender.com
-

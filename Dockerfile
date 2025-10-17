@@ -1,40 +1,31 @@
-# 🧩 1. Use official PHP image
-FROM php:8.3-fpm
+# Use official PHP + Composer + Node base
+FROM php:8.2-cli
 
-# 🧰 2. Install system dependencies + Node for Vite
+# 1️⃣ Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip nodejs npm \
-    && docker-php-ext-install pdo pdo_mysql
+    unzip git curl libpng-dev libonig-dev libxml2-dev zip nodejs npm && \
+    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# 🏗️ 3. Set working directory
+# 2️⃣ Set working directory
 WORKDIR /var/www/html
 
-# 🧾 4. Copy the entire Laravel project first (we need artisan for composer)
+# 3️⃣ Copy app files
 COPY . .
 
-# 🧱 5. Install Composer globally
+# 4️⃣ Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# 🧱 6. Install PHP dependencies (now artisan exists)
+# 5️⃣ Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# 📦 7. Install Node dependencies and build Vite assets
+# 6️⃣ Generate app key (safe for containerized builds)
+RUN cp .env.example .env || true && php artisan key:generate
+
+# 7️⃣ Install and build frontend
 RUN npm install && npm run build
 
-# ⚙️ 8. Copy .env.example → .env (so key:generate works)
-RUN cp .env.example .env || true
+# 8️⃣ Expose port (Render uses $PORT env automatically)
+EXPOSE 10000
 
-# 🔑 9. Generate Laravel app key (safe now)
-RUN php artisan key:generate --force
-
-# 🧹 10. Optimize Laravel for production
-RUN php artisan config:cache && php artisan route:cache && php artisan view:cache
-
-# 🔒 11. Fix permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# 🌐 12. Expose port
-EXPOSE 8000
-
-# 🚀 13. Start Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=${PORT:-8000}"]
+# 9️⃣ Start the PHP built-in server instead of `artisan serve`
+CMD ["php", "-S", "0.0.0.0:${PORT}", "-t", "public"]

@@ -19,5 +19,4 @@ services:
         value: false
       - key: APP_URL
         value: https://mark-portfolio.onrender.com
-      - key: PORT
-        value: 10000
+

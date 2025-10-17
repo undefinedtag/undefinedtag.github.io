@@ -28,4 +28,4 @@ RUN npm install && npm run build
 EXPOSE 10000
 
 # 9️⃣ Start the PHP built-in server instead of `artisan serve`
-CMD ["php", "-S", "0.0.0.0:${PORT}", "-t", "public"]
+CMD sh -c "php -S 0.0.0.0:${PORT:-8000} -t public"

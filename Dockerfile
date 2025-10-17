@@ -27,6 +27,9 @@ RUN cp .env.example .env || true && php artisan key:generate
 # 7️⃣ Install and build frontend
 RUN npm install && npm run build
 
+# Run database migrations before serving
+RUN php artisan migrate --force || true
+
 # 8️⃣ Expose port (Render uses $PORT env automatically)
 EXPOSE 10000
 

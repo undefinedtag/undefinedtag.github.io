@@ -1,40 +1,66 @@
-# Use official PHP + Composer + Node base
-FROM php:8.2-cli
+# Use official PHP with Apache
+FROM php:8.2-apache
 
-# 1️⃣ Install system dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    unzip git curl libpng-dev libonig-dev libxml2-dev zip nodejs npm && \
-    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    unzip git curl libpng-dev libonig-dev libxml2-dev zip nodejs npm \
+    libzip-dev sqlite3 && \
+    docker-php-ext-install pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
 
-# 2️⃣ Set working directory
+# Enable Apache modules
+RUN a2enmod rewrite headers
+
+# Set working directory
 WORKDIR /var/www/html
 
-# 3️⃣ Copy app files
+# Copy app files
 COPY . .
 
-# ✅ Create SQLite file
-RUN mkdir -p /var/www/html/database && touch /var/www/html/database/database.sqlite
+# Create SQLite database directory with proper permissions
+RUN mkdir -p /var/www/html/database && \
+    touch /var/www/html/database/database.sqlite && \
+    chmod -R 775 /var/www/html/database && \
+    chown -R www-data:www-data /var/www/html/database
 
-# 4️⃣ Install Composer
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# 5️⃣ Install PHP dependencies
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# 6️⃣ Generate app key (safe for containerized builds)
-RUN cp .env.example .env || true && php artisan key:generate
+# Copy environment file
+RUN cp .env.example .env
 
-# 7️⃣ Install and build frontend
+# Generate app key
+RUN php artisan key:generate
+
+# Install and build frontend assets
 RUN npm install && npm run build
 
-# Run database migrations before serving
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Configure Apache to use /var/www/html/public as document root
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf && \
+    echo '<Directory /var/www/html/public>\n\
+    Options Indexes FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/sites-available/000-default.conf
+
+# Run migrations
 RUN php artisan migrate --force || true
 
-# ✅ Clear and optimize Laravel caches before serving
-RUN php artisan config:clear && php artisan view:clear && php artisan route:clear && php artisan optimize
+# Clear and optimize caches
+RUN php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
 
-# 8️⃣ Expose port (Render uses $PORT env automatically)
+# Expose port
 EXPOSE 10000
 
-# 9️⃣ Start the PHP built-in server instead of `artisan serve`
-CMD sh -c "php -S 0.0.0.0:${PORT:-8000} -t public"
+# Start Apache using Render's PORT environment variable
+CMD sed -i "s/80/${PORT:-10000}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf && \
+    php artisan migrate --force && \
+    apache2-foreground

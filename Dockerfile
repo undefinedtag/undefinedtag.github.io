@@ -3,9 +3,8 @@ FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    unzip git curl libpng-dev libonig-dev libxml2-dev zip nodejs npm \
-    libzip-dev sqlite3 && \
-    docker-php-ext-install pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
+    unzip git curl libpng-dev libonig-dev libxml2-dev zip nodejs npm && \
+    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Enable Apache modules
 RUN a2enmod rewrite headers

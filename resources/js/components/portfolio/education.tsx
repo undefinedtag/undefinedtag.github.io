@@ -74,7 +74,7 @@ export function Education() {
 
                                                     <div>
                                                         <h3 className="text-2xl md:text-3xl font-bold">
-                                                            Bachelor of Science in Information Technology
+                                                            B.S. in Information Technology
                                                         </h3>
                                                         <div className="flex items-center gap-3 mt-2">
                                                             <p className="text-blue-600 dark:text-blue-400 font-semibold">

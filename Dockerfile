@@ -36,7 +36,8 @@ RUN cp .env.example .env && \
     echo "APP_ENV=production" >> .env && \
     echo "APP_DEBUG=false" >> .env && \
     echo "DB_CONNECTION=sqlite" >> .env && \
-    echo "DB_DATABASE=/var/www/html/database/database.sqlite" >> .env
+    echo "DB_DATABASE=/var/www/html/database/database.sqlite" >> .env && \
+    echo "ASSET_URL=https://blueprint-b8i9.onrender.com/" >> .env
 
 # Generate app key
 RUN php artisan key:generate --force
@@ -46,7 +47,8 @@ RUN npm ci --legacy-peer-deps && npm run build && rm -rf node_modules
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 755 /var/www/html/public
 
 # Configure Apache to use /var/www/html/public as document root
 RUN cat > /etc/apache2/sites-available/000-default.conf <<'EOF'

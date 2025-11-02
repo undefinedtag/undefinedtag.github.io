@@ -41,7 +41,7 @@ RUN composer install --no-dev --optimize-autoloader
 RUN cp .env.example .env
 
 # Generate app key
-RUN php artisan key:generate
+RUN php artisan key:generate --show
 
 # Install and build frontend assets
 RUN npm install && npm run build

@@ -63,12 +63,6 @@ export default function Portfolio() {
 
                         <div className="hidden md:flex items-center gap-8">
                             <a
-                                href="#about"
-                                className="text-sm text-muted-foreground hover:text-foreground hover:scale-110 transition-all duration-300"
-                            >
-                                About
-                            </a>
-                            <a
                                 href="#projects"
                                 className="text-sm text-muted-foreground hover:text-foreground hover:scale-110 transition-all duration-300"
                             >

@@ -60,7 +60,7 @@ export function Hero() {
                                 size="lg"
                                 className="gap-2 bg-transparent hover:scale-105 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-300"
                             >
-                                <a href="https://drive.google.com/file/d/1DxuSXWW2D4zpuVxcBz5TMtxMmlbEv5SF/view?usp=drive_link" download>
+                                <a href="https://drive.google.com/file/d/1ndrqh7fKsXt1ZvlzAUhNqas-YWkjXbGU/view?usp=drive_link" download>
                                     <Download className="h-4 w-4" />
                                     Download Resume
                                 </a>

@@ -69,7 +69,7 @@ export function Hero() {
 
                         <div className="flex items-center gap-6 pt-4 opacity-0 animate-fadeInUp delay-300">
                             <a
-                                href="https://github.com"
+                                href="https://github.com/undefinedtag/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-muted-foreground hover:text-blue-500 hover:scale-125 transition-all duration-300"
@@ -77,7 +77,7 @@ export function Hero() {
                                 <Github className="h-6 w-6" />
                             </a>
                             <a
-                                href="https://linkedin.com"
+                                href="www.linkedin.com/in/mark-francis-galan/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-muted-foreground hover:text-blue-500 hover:scale-125 transition-all duration-300"
@@ -85,7 +85,7 @@ export function Hero() {
                                 <Linkedin className="h-6 w-6" />
                             </a>
                             <a
-                                href="mailto:mark@example.com"
+                                href="mailto:francisgalan21@gmail.com"
                                 className="text-muted-foreground hover:text-blue-500 hover:scale-125 transition-all duration-300"
                             >
                                 <Mail className="h-6 w-6" />

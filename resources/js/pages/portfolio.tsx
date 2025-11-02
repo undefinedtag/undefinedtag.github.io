@@ -134,7 +134,7 @@ export default function Portfolio() {
                                 <Github className="h-5 w-5" />
                             </a>
                             <a
-                                href="https://www.linkedin.com/in/mark-francis-galan-3bb21228b/"
+                                href="https://www.linkedin.com/in/mark-francis-galan/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-muted-foreground hover:text-foreground hover:scale-125 hover:rotate-12 transition-all duration-300"

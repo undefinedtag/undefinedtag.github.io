@@ -3,17 +3,9 @@ FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    unzip \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    nodejs \
-    npm && \
-    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
+    unzip git curl libpng-dev libonig-dev libxml2-dev zip nodejs npm \
+    libzip-dev sqlite3 && \
+    docker-php-ext-install pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache modules
@@ -39,6 +31,13 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Copy environment file
 RUN cp .env.example .env
+
+# Copy environment file and configure
+RUN cp .env.example .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "DB_CONNECTION=sqlite" >> .env && \
+    echo "DB_DATABASE=/var/www/html/database/database.sqlite" >> .env
 
 # Generate app key
 RUN php artisan key:generate --show

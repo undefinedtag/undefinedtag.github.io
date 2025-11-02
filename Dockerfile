@@ -52,25 +52,41 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Configure Apache to use /var/www/html/public as document root
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf && \
-    echo '<Directory /var/www/html/public>\n\
-    Options Indexes FollowSymLinks\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' >> /etc/apache2/sites-available/000-default.conf
-
-# Run migrations
-RUN php artisan migrate --force || true
-
-# Clear and optimize caches
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
+RUN echo '<VirtualHost *:${PORT}>\n\
+    ServerAdmin webmaster@localhost\n\
+    DocumentRoot /var/www/html/public\n\
+    \n\
+    <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+    \n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Expose port
 EXPOSE 10000
 
-# Start Apache using Render's PORT environment variable
-CMD sed -i "s/80/${PORT:-10000}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf && \
-    php artisan migrate --force && \
-    apache2-foreground
+# Create startup script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Update Apache port\n\
+sed -i "s/Listen 80/Listen ${PORT:-10000}/g" /etc/apache2/ports.conf\n\
+sed -i "s/\${PORT}/${PORT:-10000}/g" /etc/apache2/sites-available/000-default.conf\n\
+\n\
+# Run migrations\n\
+php artisan migrate --force\n\
+\n\
+# Clear and cache config\n\
+php artisan config:cache\n\
+php artisan route:cache\n\
+php artisan view:cache\n\
+\n\
+# Start Apache\n\
+apache2-foreground' > /usr/local/bin/start.sh && \
+    chmod +x /usr/local/bin/start.sh
+
+CMD ["/usr/local/bin/start.sh"]

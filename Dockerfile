@@ -42,7 +42,7 @@ RUN cp .env.example .env && \
 RUN php artisan key:generate --force
 
 # Install and build frontend assets
-RUN npm install && npm run build
+RUN npm ci --legacy-peer-deps && npm run build && rm -rf node_modules
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
@@ -69,26 +69,26 @@ EOF
 EXPOSE 10000
 
 # Create startup script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Update Apache port\n\
-sed -i "s/Listen 80/Listen ${PORT:-10000}/g" /etc/apache2/ports.conf\n\
-sed -i "s/\${PORT}/${PORT:-10000}/g" /etc/apache2/sites-available/000-default.conf\n\
-\n\
-# Run migrations\n\
-php artisan migrate --force\n\
-\n\
-# Clear and cache config\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
-\n\
-# Start Apache\n\
-apache2-foreground' > /usr/local/bin/start.sh && \
-    chmod +x /usr/local/bin/start.sh
+RUN cat > /usr/local/bin/start.sh <<'EOF'
+#!/bin/bash
+set -e
 
+# Update Apache port
+sed -i "s/Listen 80/Listen ${PORT:-10000}/g" /etc/apache2/ports.conf
+sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${PORT:-10000}>/g" /etc/apache2/sites-available/000-default.conf
 
+# Run migrations
+php artisan migrate --force
 
+# Clear and cache config
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Start Apache
+apache2-foreground
+EOF
+
+RUN chmod +x /usr/local/bin/start.sh
 
 CMD ["/usr/local/bin/start.sh"]

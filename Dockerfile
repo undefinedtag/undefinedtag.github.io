@@ -37,7 +37,7 @@ RUN cp .env.example .env && \
     echo "APP_DEBUG=false" >> .env && \
     echo "DB_CONNECTION=sqlite" >> .env && \
     echo "DB_DATABASE=/var/www/html/database/database.sqlite" >> .env && \
-    echo "ASSET_URL=https://blueprint-b8i9.onrender.com/" >> .env
+    echo "ASSET_URL=https://markfrancis.onrender.com/" >> .env
 
 # Generate app key
 RUN php artisan key:generate --force

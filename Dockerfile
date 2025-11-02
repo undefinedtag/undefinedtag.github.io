@@ -20,19 +20,16 @@ WORKDIR /var/www/html
 COPY . .
 
 # Create SQLite database directory with proper permissions
-RUN mkdir -p /var/www/html/database && \
+RUN mkdir -p /var/www/html/database /var/www/html/storage/logs && \
     touch /var/www/html/database/database.sqlite && \
-    chmod -R 775 /var/www/html/database && \
-    chown -R www-data:www-data /var/www/html/database
+    chmod -R 775 /var/www/html/database /var/www/html/storage && \
+    chown -R www-data:www-data /var/www/html
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
-
-# Copy environment file
-RUN cp .env.example .env
 
 # Copy environment file and configure
 RUN cp .env.example .env && \
@@ -42,7 +39,7 @@ RUN cp .env.example .env && \
     echo "DB_DATABASE=/var/www/html/database/database.sqlite" >> .env
 
 # Generate app key
-RUN php artisan key:generate --show
+RUN php artisan key:generate --force
 
 # Install and build frontend assets
 RUN npm install && npm run build
@@ -72,23 +69,26 @@ EOF
 EXPOSE 10000
 
 # Create startup script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Update Apache port\n\
-sed -i "s/Listen 80/Listen ${PORT:-10000}/g" /etc/apache2/ports.conf\n\
-sed -i "s/\${PORT}/${PORT:-10000}/g" /etc/apache2/sites-available/000-default.conf\n\
-\n\
-# Run migrations\n\
-php artisan migrate --force\n\
-\n\
-# Clear and cache config\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
-\n\
-# Start Apache\n\
-apache2-foreground' > /usr/local/bin/start.sh && \
-    chmod +x /usr/local/bin/start.sh
+RUN cat > /usr/local/bin/start.sh <<'EOF'
+#!/bin/bash
+set -e
+
+# Update Apache port
+sed -i "s/Listen 80/Listen ${PORT:-10000}/g" /etc/apache2/ports.conf
+sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${PORT:-10000}>/g" /etc/apache2/sites-available/000-default.conf
+
+# Run migrations
+php artisan migrate --force
+
+# Clear and cache config
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Start Apache
+apache2-foreground
+EOF
+
+RUN chmod +x /usr/local/bin/start.sh
 
 CMD ["/usr/local/bin/start.sh"]
